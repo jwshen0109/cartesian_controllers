@@ -50,44 +50,44 @@
 namespace cartesian_motion_controller
 {
 
-/**
- * @brief A ROS-control controller for Cartesian motion tracking
- *
- * This controller is meant for tracking Cartesian motion that is not known in
- * advance.  Common use cases are teleoperation or Cartesian end effector
- * teaching, in which the Cartesian motion is commanded with discrete target
- * poses.
- *
- * The controller receives the targets as \a geometry_msgs::PoseStamped
- * messages and tries to reach those as best as possible.  Users can adjust the
- * controller's responsiveness to those targets with setting individual PD
- * gains for each Cartesian dimension.
- *
- * One benefit is that the controller automatically interpolates to obtain
- * smooth joint commands for distant, discretely sampled targets.
- * Users achieve this with setting qualitatively low P gains.
- *
- * For uses cases where a more precise tracking is needed, users may configure
- * this controller to a fast Inverse Kinematics solver, with setting
- * qualitatively high P gains. Note, however, that this requires
- * high-frequently published targets to avoid jumps on joint level.
- *
- * @tparam HardwareInterface The interface to support. Either PositionJointInterface or VelocityJointInterface
- */
-template <class HardwareInterface>
-class CartesianMotionController : public virtual cartesian_controller_base::CartesianControllerBase<HardwareInterface>
-{
+  /**
+   * @brief A ROS-control controller for Cartesian motion tracking
+   *
+   * This controller is meant for tracking Cartesian motion that is not known in
+   * advance.  Common use cases are teleoperation or Cartesian end effector
+   * teaching, in which the Cartesian motion is commanded with discrete target
+   * poses.
+   *
+   * The controller receives the targets as \a geometry_msgs::PoseStamped
+   * messages and tries to reach those as best as possible.  Users can adjust the
+   * controller's responsiveness to those targets with setting individual PD
+   * gains for each Cartesian dimension.
+   *
+   * One benefit is that the controller automatically interpolates to obtain
+   * smooth joint commands for distant, discretely sampled targets.
+   * Users achieve this with setting qualitatively low P gains.
+   *
+   * For uses cases where a more precise tracking is needed, users may configure
+   * this controller to a fast Inverse Kinematics solver, with setting
+   * qualitatively high P gains. Note, however, that this requires
+   * high-frequently published targets to avoid jumps on joint level.
+   *
+   * @tparam HardwareInterface The interface to support. Either PositionJointInterface or VelocityJointInterface
+   */
+  template <class HardwareInterface>
+  class CartesianMotionController : public virtual cartesian_controller_base::CartesianControllerBase<HardwareInterface>
+  {
   public:
     CartesianMotionController();
     virtual ~CartesianMotionController() = default;
 
-    virtual bool init(HardwareInterface* hw, ros::NodeHandle& nh);
+    virtual bool init(HardwareInterface *hw, ros::NodeHandle &nh);
 
-    virtual void starting(const ros::Time& time);
+    virtual void starting(const ros::Time &time);
 
-    virtual void stopping(const ros::Time& time);
+    virtual void stopping(const ros::Time &time);
 
-    virtual void update(const ros::Time& time, const ros::Duration& period);
+    virtual void update(const ros::Time &time, const ros::Duration &period);
 
     typedef cartesian_controller_base::CartesianControllerBase<HardwareInterface> Base;
 
@@ -104,15 +104,21 @@ class CartesianMotionController : public virtual cartesian_controller_base::Cart
      *
      * @return The error as a 6-dim vector (linear, angular) w.r.t to the robot base link
      */
-    ctrl::Vector6D        computeMotionError();
-    KDL::Frame      m_target_frame;
-    KDL::Frame      m_current_frame;
+    ctrl::Vector6D computeMotionError();
+    KDL::Frame m_target_frame;
+    KDL::Frame m_current_frame;
+    KDL::Frame m_current_pose;
+    Eigen::Quaterniond q_cur;
+    Eigen::Quaterniond q_target;
+    Eigen::Quaterniond q_transform;
 
-    void targetFrameCallback(const geometry_msgs::PoseStamped& pose);
+    void targetFrameCallback(const geometry_msgs::PoseStamped &pose);
+    void getCurrentState();
 
     ros::Subscriber m_target_frame_subscr;
-    std::string     m_target_frame_topic;
-};
+    ros::Publisher m_current_pose_pub;
+    std::string m_target_frame_topic;
+  };
 
 }
 
