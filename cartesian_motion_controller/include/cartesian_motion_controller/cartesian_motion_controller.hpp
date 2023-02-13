@@ -78,7 +78,7 @@ namespace cartesian_motion_controller
         this);
 
     m_current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>(nh.getNamespace() + "/current_pose", 1);
-    // m_current_velocity_pub = nh.advertise<cartesian_motion_controller::velocity>(nh.getNamespace() + "/current_velocity", 1);
+    m_current_velocity_pub = nh.advertise<geometry_msgs::TwistStamped>(nh.getNamespace() + "/current_velocity", 1);
 
     return true;
   }
@@ -115,9 +115,9 @@ namespace cartesian_motion_controller
       getCurrentState()
   {
     geometry_msgs::PoseStamped current_pose;
-    // cartesian_motion_controller::velocity current_velocity;
+    geometry_msgs::TwistStamped current_velocity;
     m_current_pose = Base::m_ik_solver->getEndEffectorPose();
-    // m_current_vel = Base::m_ik_solver->getEndEffectorVel();
+    m_current_vel = Base::m_ik_solver->getEndEffectorVel();
 
     Eigen::Matrix3d m;
     for (int i = 0; i < 3; i++)
@@ -146,15 +146,15 @@ namespace cartesian_motion_controller
     current_pose.pose.orientation.w = q_cur.w();
     m_current_pose_pub.publish(current_pose);
 
-    // current_velocity.header.frame_id = "base_link";
-    // current_velocity.header.stamp = ros::Time::now();
-    // current_velocity.twist.linear.x = m_current_vel(0);
-    // current_velocity.twist.linear.y = m_current_vel(1);
-    // current_velocity.twist.linear.z = m_current_vel(2);
-    // current_velocity.twist.angular.x = m_current_vel(3);
-    // current_velocity.twist.angular.y = m_current_vel(4);
-    // current_velocity.twist.angular.z = m_current_vel(5);
-    // m_current_velocity_pub.publish(current_velocity);
+    current_velocity.header.frame_id = "base_link";
+    current_velocity.header.stamp = ros::Time::now();
+    current_velocity.twist.linear.x = m_current_vel(0);
+    current_velocity.twist.linear.y = m_current_vel(1);
+    current_velocity.twist.linear.z = m_current_vel(2);
+    current_velocity.twist.angular.x = m_current_vel(3);
+    current_velocity.twist.angular.y = m_current_vel(4);
+    current_velocity.twist.angular.z = m_current_vel(5);
+    m_current_velocity_pub.publish(current_velocity);
 
     // if(flag){
     //   out << current_pose.pose.position.x << "\t";

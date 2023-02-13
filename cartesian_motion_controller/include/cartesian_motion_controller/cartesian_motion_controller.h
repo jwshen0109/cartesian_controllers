@@ -46,6 +46,7 @@
 // ROS
 #include <kdl/frames.hpp>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 
 namespace cartesian_motion_controller
 {
@@ -108,6 +109,7 @@ namespace cartesian_motion_controller
     KDL::Frame m_target_frame;
     KDL::Frame m_current_frame;
     KDL::Frame m_current_pose;
+    ctrl::Vector6D m_current_vel;
     Eigen::Quaterniond q_cur;
     Eigen::Quaterniond q_target;
     Eigen::Quaterniond q_transform;
@@ -117,6 +119,7 @@ namespace cartesian_motion_controller
 
     ros::Subscriber m_target_frame_subscr;
     ros::Publisher m_current_pose_pub;
+    ros::Publisher m_current_velocity_pub;
     std::string m_target_frame_topic;
   };
 
