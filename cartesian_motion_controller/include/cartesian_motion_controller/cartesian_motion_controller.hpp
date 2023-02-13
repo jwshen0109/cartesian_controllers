@@ -192,6 +192,8 @@ namespace cartesian_motion_controller
 
     // Write final commands to the hardware interface
     Base::writeJointControlCmds();
+
+    getCurrentState();
   }
 
   template <class HardwareInterface>
