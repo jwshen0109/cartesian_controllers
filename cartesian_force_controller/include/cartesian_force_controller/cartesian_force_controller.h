@@ -54,42 +54,42 @@
 namespace cartesian_force_controller
 {
 
-/**
- * @brief A ROS-control controller for Cartesian force control
- *
- * This controller implements 6-dimensional end effector force control for
- * robots with a wrist force-torque sensor.  Users command
- * geometry_msgs::WrenchStamped targets to steer the robot in task space.  The
- * controller additionally listens to the specified force-torque sensor signals
- * and computes the superposition with the target wrench.
- *
- * The underlying solver maps this remaining wrench to joint motion.
- * Users can steer their robot with this control in free space. The speed of
- * the end effector motion is set with PD gains on each Cartesian axes.
- * In contact, the controller regulates the net force of the two wrenches to zero.
- *
- * Note that during free motion, users can generally set higher control gains
- * for faster motion.  In contact with the environment, however, normally lower
- * gains are required to maintain stability.  The ranges to operate in mainly
- * depend on the stiffness of the environment and the controller cycle of the
- * real hardware, such that some experiments might be required for each use
- * case.
- *
- * @tparam HardwareInterface The interface to support. Either PositionJointInterface or VelocityJointInterface
- */
-template <class HardwareInterface>
-class CartesianForceController : public virtual cartesian_controller_base::CartesianControllerBase<HardwareInterface>
-{
+  /**
+   * @brief A ROS-control controller for Cartesian force control
+   *
+   * This controller implements 6-dimensional end effector force control for
+   * robots with a wrist force-torque sensor.  Users command
+   * geometry_msgs::WrenchStamped targets to steer the robot in task space.  The
+   * controller additionally listens to the specified force-torque sensor signals
+   * and computes the superposition with the target wrench.
+   *
+   * The underlying solver maps this remaining wrench to joint motion.
+   * Users can steer their robot with this control in free space. The speed of
+   * the end effector motion is set with PD gains on each Cartesian axes.
+   * In contact, the controller regulates the net force of the two wrenches to zero.
+   *
+   * Note that during free motion, users can generally set higher control gains
+   * for faster motion.  In contact with the environment, however, normally lower
+   * gains are required to maintain stability.  The ranges to operate in mainly
+   * depend on the stiffness of the environment and the controller cycle of the
+   * real hardware, such that some experiments might be required for each use
+   * case.
+   *
+   * @tparam HardwareInterface The interface to support. Either PositionJointInterface or VelocityJointInterface
+   */
+  template <class HardwareInterface>
+  class CartesianForceController : public virtual cartesian_controller_base::CartesianControllerBase<HardwareInterface>
+  {
   public:
     CartesianForceController();
 
-    bool init(HardwareInterface* hw, ros::NodeHandle& nh);
+    bool init(HardwareInterface *hw, ros::NodeHandle &nh);
 
-    void starting(const ros::Time& time);
+    void starting(const ros::Time &time);
 
-    void stopping(const ros::Time& time);
+    void stopping(const ros::Time &time);
 
-    void update(const ros::Time& time, const ros::Duration& period);
+    void update(const ros::Time &time, const ros::Duration &period);
 
     typedef cartesian_controller_base::CartesianControllerBase<HardwareInterface> Base;
 
@@ -99,27 +99,35 @@ class CartesianForceController : public virtual cartesian_controller_base::Carte
      *
      * @return The remaining error wrench, given in robot base frame
      */
-    ctrl::Vector6D        computeForceError();
-    std::string           m_new_ft_sensor_ref;
-    void setFtSensorReferenceFrame(const std::string& new_ref);
+    ctrl::Vector6D computeForceError();
+    std::string m_new_ft_sensor_ref;
+    void setFtSensorReferenceFrame(const std::string &new_ref);
+    void getCurrentState();
 
   private:
-    ctrl::Vector6D        compensateGravity();
+    ctrl::Vector6D compensateGravity();
 
-    void targetWrenchCallback(const geometry_msgs::WrenchStamped& wrench);
-    void ftSensorWrenchCallback(const geometry_msgs::WrenchStamped& wrench);
-    bool signalTaringCallback(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& res);
+    void targetWrenchCallback(const geometry_msgs::WrenchStamped &wrench);
+    void ftSensorWrenchCallback(const geometry_msgs::WrenchStamped &wrench);
+    bool signalTaringCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
-    ros::ServiceServer    m_signal_taring_server;
-    ros::Subscriber       m_target_wrench_subscriber;
-    ros::Subscriber       m_ft_sensor_wrench_subscriber;
-    ctrl::Vector6D        m_target_wrench;
-    ctrl::Vector6D        m_ft_sensor_wrench;
-    ctrl::Vector6D        m_weight_force;
-    ctrl::Vector6D        m_grav_comp_during_taring;
-    ctrl::Vector3D        m_center_of_mass;
-    std::string           m_ft_sensor_ref_link;
-    KDL::Frame            m_ft_sensor_transform;
+    ros::ServiceServer m_signal_taring_server;
+    ros::Subscriber m_target_wrench_subscriber;
+    ros::Subscriber m_ft_sensor_wrench_subscriber;
+    ros::Publisher m_current_pose_pub;
+    ros::Publisher m_current_velocity_pub;
+    ctrl::Vector6D m_target_wrench;
+    ctrl::Vector6D m_ft_sensor_wrench;
+    ctrl::Vector6D m_weight_force;
+    ctrl::Vector6D m_grav_comp_during_taring;
+    ctrl::Vector3D m_center_of_mass;
+    std::string m_ft_sensor_ref_link;
+    KDL::Frame m_ft_sensor_transform;
+    KDL::Frame m_current_pose;
+    ctrl::Vector6D m_current_vel;
+    Eigen::Quaterniond q_cur;
+    Eigen::Quaterniond q_target;
+    Eigen::Quaterniond q_transform;
 
     /**
      * Allow users to choose whether to specify their target wrenches in the
@@ -132,11 +140,11 @@ class CartesianForceController : public virtual cartesian_controller_base::Carte
     // Force control specific dynamic reconfigure
     typedef cartesian_force_controller::CartesianForceControllerConfig Config;
 
-    void dynamicReconfigureCallback(Config& config, uint32_t level);
+    void dynamicReconfigureCallback(Config &config, uint32_t level);
 
-    std::shared_ptr<dynamic_reconfigure::Server<Config> > m_dyn_conf_server;
+    std::shared_ptr<dynamic_reconfigure::Server<Config>> m_dyn_conf_server;
     dynamic_reconfigure::Server<Config>::CallbackType m_callback_type;
-};
+  };
 
 }
 
